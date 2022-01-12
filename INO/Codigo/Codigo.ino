@@ -54,12 +54,12 @@ void loop() {
   writeInLDC(theta_R);
 
   // Move servo if switcher is on
-  if (digitalRead(inPin) == HIGH){
+  if (digitalRead(switchPin) == HIGH){
     // Get angle to move from PID
-    theta_S = Kp*theta_E;
-    omega_S = Kd*theta_E;
+    // theta_S = Kp*theta_E;
+    // omega_S = Kd*theta_E;
     // Move servo
-    myservo.write(theta_S,omega_S,false);
+    myservo.write(theta_E,255,false);
   }
 
 
@@ -134,28 +134,28 @@ float fotocouple (int pin1, int pin2, int theta){
 
   // Solve equation
 
-  if (A+C != 0 && -B*sqrt(pow(A,2.0)+pow(B,2.0)-pow(C,2.0))+pow(A,2.0)+A*C+pow(B,2.0) != 0) {
+  if (A+C != 0.0 && -B*sqrt(pow(A,2.0)+pow(B,2.0)-pow(C,2.0))+pow(A,2.0)+A*C+pow(B,2.0) != 0.0) {
 
-     alpha = 2*atan((B-sqrt(pow(A,2.0)+pow(B,2.0)-pow(C,2.0)))/(A+C));
-
-  }
-  else if( A+C != 0 &&  B*sqrt(pow(A,2.0)+pow(B,2.0)-pow(C,2.0))+pow(A,2.0)+A*C+pow(B,2.0) != 0 ){
-
-     alpha = 2*atan((B+sqrt(pow(A,2.0)+pow(B,2.0)-pow(C,2.0)))/(A+C));
+     alpha = 2.0*atan((B-sqrt(pow(A,2.0)+pow(B,2.0)-pow(C,2.0)))/(A+C));
 
   }
-  else if( B != 0  && pow(A,2.0)+pow(B,2.0)!=0 && C == -A){
+  else if( A+C != 0.0 &&  B*sqrt(pow(A,2.0)+pow(B,2.0)-pow(C,2.0))+pow(A,2.0)+A*C+pow(B,2.0) != 0.0 ){
 
-    alpha = -2*atan(A/B);
+     alpha = 2.0*atan((B+sqrt(pow(A,2.0)+pow(B,2.0)-pow(C,2.0)))/(A+C));
+
+  }
+  else if( B != 0.0  && pow(A,2.0)+pow(B,2.0)!=0.0 && C == -A){
+
+    alpha = -2.0*atan(A/B);
 
   }
   else if( A == -C){
     alpha = 3.1416;
   }
 
-  alpha = (alpha - c*3.1416/180)/b;
+  alpha = (alpha - c*3.1416/180.0)/b;
 
-  alpha = alpha*180/3.1416;
+  alpha = alpha*180.0/3.1416;
 
   return alpha;
 
