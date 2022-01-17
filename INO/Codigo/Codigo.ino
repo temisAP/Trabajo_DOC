@@ -38,17 +38,17 @@ float S_theta_E = 0;    // Cumulative error
 
 // PID constants
 float theta_T = 0;      // Target angle
-float Kp = 1;
-float Ki = 0;
-float Kd = 1;
+float kp = 1;
+float ki = 0;
+float kd = 0;
 
 void setup() {
   // LCD setup
   lcd.begin(16, 2);   // set up the LCD's number of columns and rorws:
-  lcd.print("Angle"); // print a message to the LCD
+  lcd.print("Hello"); // print a message to the LCD
   // Servo setup
   myservo.attach(servoPin);     // attaches the servo on servoPin
-  myservo.write(90,12,true);    // set the intial position of the servo, as fast as possible, wait until done
+  //myservo.write(90,12,true);    // set the intial position of the servo, as fast as possible, wait until done
   // Serial
   Serial.begin(9600);
   // Switcher (modes);
@@ -59,28 +59,28 @@ void loop() {
   // delay(1000); // Uncomment this line to be able to read serial
 
   // Get angle and time
-  get_angle(&angles);
+  get_angle(angles);
   theta_R = angles[0];
   theta_V = angles[1];
   if (theta_R-theta_R_prev >= 5) {S_theta_E = 0;} // Reset time origin for PID
 
   // Write angle in LCD
-  writeInLDC(theta_R,theta_V);
+  // writeInLDC(theta_R,theta_V);
 
   // Move servo if switcher is on
   if (digitalRead(switchPin) == HIGH){
     // Time and error
-    now = 1000 * millis()
+    now = 1000 * millis();
     theta_E = theta_T - theta_R;
     d_theta_E =  (theta_E - theta_E_prev) / (now-prev);
-    S_theta_E += (theta_E + theta_E_prev) / 2.0 * (now-prev)
+    S_theta_E += (theta_E + theta_E_prev) / 2.0 * (now-prev);
     // Get movement of the falcon
     theta_F = theta_F + theta_E;
     omega_F = kp*theta_E + kd*d_theta_E + ki*S_theta_E;
     // Servo movement
     theta_S = (180.0 - theta_F)/2.0;
-    omega_S = 2*omega_F
-    if (omega_S >= 20) {omega_S = 20;}   // Para que no salga volando
+    omega_S = 2*omega_F;
+    if (omega_S >= 15) {omega_S = 20;}   // Para que no salga volando
     // Move servo
     myservo.write(theta_S,omega_S,true); // True overwrites angle
     // Store previous error state
@@ -99,16 +99,15 @@ void writeInLDC(float longitude ,float latitude){
 
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Latitude : ");
-  lcd.print(latitude);
-  lcd.setCursor(0,1);
-  lcd.print("Longitude : ");
+  lcd.print("Lon: ");
   lcd.print(longitude);
-  lcd.setCursor(16,1);
-  lcd.print(digitalRead(switchPin))
+  lcd.setCursor(0,1);
+  lcd.print("Lat: ");
+  lcd.print(latitude);
+
 }
 
-void get_angle(float *angles){
+void get_angle(float angle[]){
   // Function to get current angle between sensor and light source
   //
   //    input angle:  by reference, it will be modificated if passed like get_angle(&angles)
@@ -127,7 +126,7 @@ void get_angle(float *angles){
   float I4 = analogRead(ldr4);
   float I5 = analogRead(ldr5);
 
-  float threshold = (I0+I1+I2+I3+I4+I5) * 0.01 // Value to determine number of sensors activated
+  float threshold = (I0+I1+I2+I3+I4+I5) * 0.05; // Value to determine number of sensors activated
 
   // Determine the number of sensors above threshold
 
@@ -139,6 +138,29 @@ void get_angle(float *angles){
   if (I4 > threshold) n++;
   if (I5 > threshold) n++;
 
+  // To be commented 
+  Serial.print("n: ");
+  Serial.print(n);
+
+  Serial.print("ldr0 ");
+  Serial.print(analogRead(ldr0));
+  
+  Serial.print(" ldr1 ");
+  Serial.print(analogRead(ldr1));
+
+  Serial.print(" ldr2 ");
+  Serial.print(analogRead(ldr2));
+
+  Serial.print(" ldr3 ");
+  Serial.print(analogRead(ldr3));
+  
+  Serial.print(" ldr4 ");
+  Serial.print(analogRead(ldr4));
+
+  Serial.print(" ldr5 ");
+  Serial.print(analogRead(ldr5));
+  Serial.println();
+  
   // If no sensors are above threshold, return 999,999
 
   if (n == 0) {
@@ -197,8 +219,8 @@ void get_angle(float *angles){
   }
 
 
-  longitude = alpha;
-  latidude  = beta;
+  float longitude = alpha;
+  float latitude  = (beta+gamma)/2.0;
 
   angle[0] = latitude;
   angle[1] = longitude;
