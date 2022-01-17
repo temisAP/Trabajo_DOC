@@ -28,7 +28,7 @@ float omega_S;      // Servo speed rate
 
 // PID
 float Kp = 1;
-float Ki = 1;
+float Ki = 0;
 float Kd = 1;
 
 
@@ -38,7 +38,7 @@ void setup() {
   lcd.print("Angle"); // print a message to the LCD
   // Servo setup
   myservo.attach(servoPin);     // attaches the servo on servoPin
-  myservo.write(0,255,true);    // set the intial position of the servo, as fast as possible, wait until done
+  myservo.write(0,12,true);    // set the intial position of the servo, as fast as possible, wait until done
   // Serial
   Serial.begin(9600);
   // Switcher (modes);
@@ -46,7 +46,7 @@ void setup() {
 }
 
 void loop() {
-  // delay(500); // Uncomment this line to be able to read serial
+  delay(1000); // Uncomment this line to be able to read serial
   // Get angle
   theta_R = get_angle();
   theta_E = theta_T - theta_R;
@@ -59,7 +59,7 @@ void loop() {
     // theta_S = Kp*theta_E;
     // omega_S = Kd*theta_E;
     // Move servo
-    myservo.write(theta_E,255,false);
+    myservo.write(theta_E,12,false);
   }
 
 
@@ -86,6 +86,30 @@ float get_angle(){
 
 
   // Should compare readings between six ldrs
+
+  Serial.print("ldr0 = ");
+  Serial.print(analogRead(ldr0));
+  Serial.println();
+
+  Serial.print("ldr1 = ");
+  Serial.print(analogRead(ldr1));
+  Serial.println();
+
+  Serial.print("ldr2 = ");
+  Serial.print(analogRead(ldr2));
+  Serial.println();
+
+  Serial.print("ldr3 = ");
+  Serial.print(analogRead(ldr3));
+  Serial.println();
+
+  Serial.print("ldr4 = ");
+  Serial.print(analogRead(ldr4));
+  Serial.println();
+
+  Serial.print("ldr5 = ");
+  Serial.print(analogRead(ldr5));
+  Serial.println();
 
   float theta = 90;
   float alpha = fotocouple(ldr0,ldr1,theta);
@@ -116,13 +140,7 @@ float fotocouple (int pin1, int pin2, int theta){
   // Get input
 
   float I1 = analogRead(pin1);
-  Serial.print("I1 = ");
-  Serial.print(I1);
-  Serial.println();
   float I2 = analogRead(pin2);
-  Serial.print("I2 = ");
-  Serial.print(I2);
-  Serial.println();
 
   // Determine coeficients
 
