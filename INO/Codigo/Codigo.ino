@@ -27,15 +27,17 @@ float omega_S;      // Servo speed rate
 float now;          // Current time
 float prev;         // Previous time
 // PID angles
-float theta_R = 0;      // Relative angle between sensors and sun
+float theta_R = 0;      // Relative longitude angle between sensors and sun
 float theta_R_prev = 0; // Previous angle between sensors and sun
-float theta_T = 0;      // Target angle
+float theta_V;          // Relative latitude angle between sensors and sunS
+float angles[2];   // Array to contain {theta_R,theta_V}
 float theta_E = 0;      // Error between R and T
 float theta_E_prev = 0; // Previous error
 float d_theta_E = 0;    // Derivate of error
 float S_theta_E = 0;    // Cumulative error
 
 // PID constants
+float theta_T = 0;      // Target angle
 float Kp = 1;
 float Ki = 0;
 float Kd = 1;
@@ -46,7 +48,7 @@ void setup() {
   lcd.print("Angle"); // print a message to the LCD
   // Servo setup
   myservo.attach(servoPin);     // attaches the servo on servoPin
-  myservo.write(0,12,true);    // set the intial position of the servo, as fast as possible, wait until done
+  myservo.write(90,12,true);    // set the intial position of the servo, as fast as possible, wait until done
   // Serial
   Serial.begin(9600);
   // Switcher (modes);
@@ -57,11 +59,13 @@ void loop() {
   // delay(1000); // Uncomment this line to be able to read serial
 
   // Get angle and time
-  theta_R = get_angle();
+  get_angle(&angles);
+  theta_R = angles[0];
+  theta_V = angles[1];
   if (theta_R-theta_R_prev >= 5) {S_theta_E = 0;} // Reset time origin for PID
 
   // Write angle in LCD
-  writeInLDC(theta_R);
+  writeInLDC(theta_R,theta_V);
 
   // Move servo if switcher is on
   if (digitalRead(switchPin) == HIGH){
@@ -87,54 +91,118 @@ void loop() {
 
 }
 
-void writeInLDC(float angle){
+void writeInLDC(float longitude ,float latitude){
   // Function write current angle in the LDC display
   //
-  //    input angle: angle to be displayed
-  //
+  //    input latitude : angle in xy plane
+  //    input longitude: angle in verical
 
   lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Angle");
-  lcd.setCursor(0, 1);
-  lcd.print(angle);
+  lcd.setCursor(0,0);
+  lcd.print("Latitude : ");
+  lcd.print(latitude);
+  lcd.setCursor(0,1);
+  lcd.print("Longitude : ");
+  lcd.print(longitude);
+  lcd.setCursor(16,1);
+  lcd.print(digitalRead(switchPin))
 }
 
-float get_angle(){
+void get_angle(float *angles){
   // Function to get current angle between sensor and light source
   //
-  //    return alpha:  angle between sensor and light source
+  //    input angle:  by reference, it will be modificated if passed like get_angle(&angles)
   //
 
-  // Compare six ldrs to determine where the light is
+  float alpha;
+  float beta;
+  float gamma;
 
-  Serial.print("ldr0 = ");
-  Serial.print(analogRead(ldr0));
-  Serial.println();
+  // Current intensities
 
-  Serial.print("ldr1 = ");
-  Serial.print(analogRead(ldr1));
-  Serial.println();
+  float I0 = analogRead(ldr0);
+  float I1 = analogRead(ldr1);
+  float I2 = analogRead(ldr2);
+  float I3 = analogRead(ldr3);
+  float I4 = analogRead(ldr4);
+  float I5 = analogRead(ldr5);
 
-  Serial.print("ldr2 = ");
-  Serial.print(analogRead(ldr2));
-  Serial.println();
+  float threshold = (I0+I1+I2+I3+I4+I5) * 0.01 // Value to determine number of sensors activated
 
-  Serial.print("ldr3 = ");
-  Serial.print(analogRead(ldr3));
-  Serial.println();
+  // Determine the number of sensors above threshold
 
-  Serial.print("ldr4 = ");
-  Serial.print(analogRead(ldr4));
-  Serial.println();
+  int n = 0;
+  if (I0 > threshold) n++;
+  if (I1 > threshold) n++;
+  if (I2 > threshold) n++;
+  if (I3 > threshold) n++;
+  if (I4 > threshold) n++;
+  if (I5 > threshold) n++;
 
-  Serial.print("ldr5 = ");
-  Serial.print(analogRead(ldr5));
-  Serial.println();
+  // If no sensors are above threshold, return 999,999
 
-  float theta = 90;
-  float alpha = fotocouple(ldr0,ldr1,theta);
-  return alpha;
+  if (n == 0) {
+    angles[0] = 999;
+    angles[1] = 999;
+    return;
+  }
+
+  // Determine where the light is
+
+  // Lateral cuadrant
+  if (n==3){
+    // Down right
+    if (I5+I4+I3 > I1+I0+I2) {
+      alpha = 0.00 + fotocouple(ldr5,ldr4, 90);
+      beta  = -1.0 * fotocouple(ldr4,ldr3, 90);
+      gamma = 0.00 + fotocouple(ldr5,ldr3, 90);
+    }
+    // Up left
+    else if (I5+I4+I3 > I1+I0+I2) {
+      alpha = 90.0 + fotocouple(ldr5,ldr4, 90);
+      beta  = +1.0 * fotocouple(ldr4,ldr3, 90);
+      gamma = 90.0 + fotocouple(ldr5,ldr3, 90);
+    }
+  }
+  // Frontal light
+  else if ( n == 2 && I1 > threshold &&  I4 > threshold) {
+      alpha = 90.0;
+      if (I2>I3)      {beta= 1.0 * fotocouple(ldr1,ldr2,90);}
+      else if (I2>I3) {beta=-1.0 * fotocouple(ldr4,ldr3,90);}
+      gamma = 0.0;
+  }
+  // Left lateral light
+  else if (n==1 && I5 > threshold){
+      alpha = 0.0;
+      beta  = 0.0;
+      gamma = 0.0;
+  }
+  // Right lateral light
+  else if (n==1 && I0 > threshold){
+      alpha = 180.0;
+      beta  = 0.0;
+      gamma = 0.0;
+  }
+  // Upper light
+  else if (n==1 && I2 > threshold){
+      alpha = 90.0;
+      beta  = 90.0;
+      gamma = 90.0;
+  }
+  // Upper light
+  else if (n==1 && I3 > threshold){
+      alpha = 90.0;
+      beta  = -90.0;
+      gamma = -90.0;
+  }
+
+
+  longitude = alpha;
+  latidude  = beta;
+
+  angle[0] = latitude;
+  angle[1] = longitude;
+
 
 }
 
@@ -153,6 +221,8 @@ float fotocouple (int pin1, int pin2, int theta){
   theta = theta*3.1416/180;
 
   // MODEL PARAMETERS
+
+  // if (pin1==0 || pin1 == 2){}
 
   float b = 1.7875;
   float c = 11.77375;
