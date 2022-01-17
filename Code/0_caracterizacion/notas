@@ -2,3 +2,6 @@ l luz-halcon = 377 mm
 h del halcon = 80mm
 
 Los CSVs tienen la altura de la fuente de la luz respecto a la mesa en el nombre
+
+Los ángulos son los del motor y hay que restarle 5 grados (fallo mío en el script, las cosas llevan un orden que hay que respetar)
+

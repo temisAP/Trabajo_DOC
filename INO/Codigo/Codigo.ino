@@ -17,20 +17,28 @@ const int ldr3      = A3;
 const int ldr4      = A4;
 const int ldr5      = A5;
 
-// Constants
-float theta_R;      // Relative angle between sensors and sun
-float theta_T = 0;  // Target angle
-float theta_E;      // Error between
-
+// Falcon variables
+float theta_F;      // Falcon angle
+float omega_F;      // Falcon speed rate
+// Servo variables
 float theta_S;      // Servo angle
 float omega_S;      // Servo speed rate
+// Time variables
+float now;          // Current time
+float prev;         // Previous time
+// PID angles
+float theta_R = 0;      // Relative angle between sensors and sun
+float theta_R_prev = 0; // Previous angle between sensors and sun
+float theta_T = 0;      // Target angle
+float theta_E = 0;      // Error between R and T
+float theta_E_prev = 0; // Previous error
+float d_theta_E = 0;    // Derivate of error
+float S_theta_E = 0;    // Cumulative error
 
-
-// PID
+// PID constants
 float Kp = 1;
 float Ki = 0;
 float Kd = 1;
-
 
 void setup() {
   // LCD setup
@@ -46,20 +54,34 @@ void setup() {
 }
 
 void loop() {
-  delay(1000); // Uncomment this line to be able to read serial
-  // Get angle
+  // delay(1000); // Uncomment this line to be able to read serial
+
+  // Get angle and time
   theta_R = get_angle();
-  theta_E = theta_T - theta_R;
+  if (theta_R-theta_R_prev >= 5) {S_theta_E = 0;} // Reset time origin for PID
+
   // Write angle in LCD
   writeInLDC(theta_R);
 
   // Move servo if switcher is on
   if (digitalRead(switchPin) == HIGH){
-    // Get angle to move from PID
-    // theta_S = Kp*theta_E;
-    // omega_S = Kd*theta_E;
+    // Time and error
+    now = 1000 * millis()
+    theta_E = theta_T - theta_R;
+    d_theta_E =  (theta_E - theta_E_prev) / (now-prev);
+    S_theta_E += (theta_E + theta_E_prev) / 2.0 * (now-prev)
+    // Get movement of the falcon
+    theta_F = theta_F + theta_E;
+    omega_F = kp*theta_E + kd*d_theta_E + ki*S_theta_E;
+    // Servo movement
+    theta_S = (180.0 - theta_F)/2.0;
+    omega_S = 2*omega_F
+    if (omega_S >= 20) {omega_S = 20;}   // Para que no salga volando
     // Move servo
-    myservo.write(theta_E,12,false);
+    myservo.write(theta_S,omega_S,true); // True overwrites angle
+    // Store previous error state
+    theta_E_prev = theta_E;
+    prev = now;
   }
 
 
@@ -84,8 +106,7 @@ float get_angle(){
   //    return alpha:  angle between sensor and light source
   //
 
-
-  // Should compare readings between six ldrs
+  // Compare six ldrs to determine where the light is
 
   Serial.print("ldr0 = ");
   Serial.print(analogRead(ldr0));
