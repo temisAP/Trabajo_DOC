@@ -1,0 +1,71 @@
+FotoTransistor.o: \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/FotoTransistor.c \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/FotoTransistor.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtwtypes.h \
+ C:/PROGRA~1/MATLAB/R2021a/simulink/include/rtw_extmode.h \
+ C:/PROGRA~1/MATLAB/R2021a/simulink/include/sysran_types.h \
+ C:/PROGRA~1/MATLAB/R2021a/simulink/include/rtw_continuous.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtwtypes.h \
+ C:/PROGRA~1/MATLAB/R2021a/simulink/include/rtw_solver.h \
+ C:/PROGRA~1/MATLAB/R2021a/simulink/include/rtw_continuous.h \
+ C:/PROGRA~1/MATLAB/R2021a/rtw/c/src/dt_info.h \
+ C:/PROGRA~1/MATLAB/R2021a/rtw/c/src/ext_mode/common/ext_work.h \
+ C:/PROGRA~1/MATLAB/R2021a/rtw/c/src/ext_mode/common/ext_types.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/FotoTransistor_types.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/multiword_types.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/MW_target_hardware_resources.h \
+ C:/PROGRA~3/MATLAB/SUPPOR~1/R2021a/toolbox/target/SUPPOR~1/ARDUIN~1/SCHEDU~1/include/arduinoAVRScheduler.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/Arduino.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2021a/aIDE/hardware/arduino/avr/cores/arduino/binary.h \
+ C:/ProgramData/MATLAB/SupportPackages/R2021a/aIDE/hardware/arduino/avr/variants/standard/pins_arduino.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rt_nonfinite.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtGetInf.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/FotoTransistor_private.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/FotoTransistor_dt.h \
+ C:/PROGRA~1/MATLAB/R2021a/rtw/c/src/ext_mode/common/ext_types.h
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/FotoTransistor.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtwtypes.h:
+
+C:/PROGRA~1/MATLAB/R2021a/simulink/include/rtw_extmode.h:
+
+C:/PROGRA~1/MATLAB/R2021a/simulink/include/sysran_types.h:
+
+C:/PROGRA~1/MATLAB/R2021a/simulink/include/rtw_continuous.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtwtypes.h:
+
+C:/PROGRA~1/MATLAB/R2021a/simulink/include/rtw_solver.h:
+
+C:/PROGRA~1/MATLAB/R2021a/simulink/include/rtw_continuous.h:
+
+C:/PROGRA~1/MATLAB/R2021a/rtw/c/src/dt_info.h:
+
+C:/PROGRA~1/MATLAB/R2021a/rtw/c/src/ext_mode/common/ext_work.h:
+
+C:/PROGRA~1/MATLAB/R2021a/rtw/c/src/ext_mode/common/ext_types.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/FotoTransistor_types.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/multiword_types.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/MW_target_hardware_resources.h:
+
+C:/PROGRA~3/MATLAB/SUPPOR~1/R2021a/toolbox/target/SUPPOR~1/ARDUIN~1/SCHEDU~1/include/arduinoAVRScheduler.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/Arduino.h:
+
+C:/ProgramData/MATLAB/SupportPackages/R2021a/aIDE/hardware/arduino/avr/cores/arduino/binary.h:
+
+C:/ProgramData/MATLAB/SupportPackages/R2021a/aIDE/hardware/arduino/avr/variants/standard/pins_arduino.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rt_nonfinite.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtGetInf.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/FotoTransistor_private.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/FotoTransistor_dt.h:
+
+C:/PROGRA~1/MATLAB/R2021a/rtw/c/src/ext_mode/common/ext_types.h:

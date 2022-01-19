@@ -1,0 +1,11 @@
+rtGetInf.o: \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtGetInf.c \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtGetInf.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtwtypes.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rt_nonfinite.h
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtGetInf.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rtwtypes.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Constantes/FotoTransistor_ert_rtw/rt_nonfinite.h:
