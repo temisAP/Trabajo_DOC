@@ -8,7 +8,7 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);  // create LCD objet to display
 VarSpeedServo myservo;                  // create servo object to control a servo
 
 // Pins
-const int switchPin = 0;     // analog pin used to change between modes
+const int switchPin = 13;     // analog pin used to change between modes
 const int servoPin  = 9;     // the digital pin used for the servo
 const int ldr0      = A0;
 const int ldr1      = A1;
@@ -18,14 +18,14 @@ const int ldr4      = A4;
 const int ldr5      = A5;
 
 // Falcon variables
-float theta_F;      // Falcon angle
-float omega_F;      // Falcon speed rate
+float theta_F = 0;      // Falcon angle
+float omega_F = 0;      // Falcon speed rate
 // Servo variables
-float theta_S;      // Servo angle
-float omega_S;      // Servo speed rate
+float theta_S = 90;      // Servo angle
+float omega_S = 12;      // Servo speed rate
 // Time variables
-float now;          // Current time
-float prev;         // Previous time
+float now = 0;          // Current time
+float prev = 0;         // Previous time
 // PID angles
 float theta_R = 0;      // Relative longitude angle between sensors and sun
 float theta_R_prev = 0; // Previous angle between sensors and sun
@@ -48,24 +48,26 @@ void setup() {
   lcd.print("Hello"); // print a message to the LCD
   // Servo setup
   myservo.attach(servoPin);     // attaches the servo on servoPin
-  //myservo.write(90,12,true);    // set the intial position of the servo, as fast as possible, wait until done
+  myservo.write(theta_S,omega_S,true);    // set the intial position of the servo, as fast as possible, wait until done
   // Serial
   Serial.begin(9600);
+  //while (!Serial);
+  //Serial.println("ldr0,ldr1,ldr2,ldr3,ldr4,ldr5");
   // Switcher (modes);
   pinMode(switchPin, INPUT);
 }
 
 void loop() {
-  // delay(1000); // Uncomment this line to be able to read serial
+   delay(100); // Uncomment this line to be able to read serial
 
   // Get angle and time
   get_angle(angles);
   theta_R = angles[0];
   theta_V = angles[1];
-  if (theta_R-theta_R_prev >= 5) {S_theta_E = 0;} // Reset time origin for PID
+  if (theta_R-theta_R_prev >= 70) {S_theta_E = 0;} // Reset time origin for PID
 
   // Write angle in LCD
-  // writeInLDC(theta_R,theta_V);
+  writeInLDC(theta_R,theta_V);
 
   // Move servo if switcher is on
   if (digitalRead(switchPin) == HIGH){
@@ -80,7 +82,10 @@ void loop() {
     // Servo movement
     theta_S = (180.0 - theta_F)/2.0;
     omega_S = 2*omega_F;
-    if (omega_S >= 15) {omega_S = 20;}   // Para que no salga volando
+    // Survival
+    if (omega_S >= 15) {omega_S = 15;}   // Para que no salga volando
+    if (theta_S >= 180) {theta_S = 0;}   // Busca en el otro sentido
+    if (theta_S <= 0) {theta_S = 180;}   // Busca en el otro sentido
     // Move servo
     myservo.write(theta_S,omega_S,true); // True overwrites angle
     // Store previous error state
@@ -119,116 +124,97 @@ void get_angle(float angle[]){
 
   // Current intensities
 
-  float I0 = analogRead(ldr0);
-  float I1 = analogRead(ldr1);
-  float I2 = analogRead(ldr2);
-  float I3 = analogRead(ldr3);
-  float I4 = analogRead(ldr4);
-  float I5 = analogRead(ldr5);
+  float I1 = analogRead(ldr0);
+  float I2 = analogRead(ldr1);
+  float I3 = analogRead(ldr2);
+  float I4 = analogRead(ldr3);
+  float I5 = analogRead(ldr4);
+  float I6 = analogRead(ldr5);
 
-  float threshold = (I0+I1+I2+I3+I4+I5) * 0.05; // Value to determine number of sensors activated
+  // To be commented
 
-  // Determine the number of sensors above threshold
+  //Serial.print(analogRead(ldr0));
+  //Serial.print(",");
+  //Serial.print(analogRead(ldr1));
+  //Serial.print(",");
+  //Serial.print(analogRead(ldr2));
+  //Serial.print(",");
+  //Serial.print(analogRead(ldr3));
+  //Serial.print(",");
+  //Serial.print(analogRead(ldr4));
+  //Serial.print(",");
+  //Serial.print(analogRead(ldr5));
+  //Serial.println();
 
-  int n = 0;
-  if (I0 > threshold) n++;
-  if (I1 > threshold) n++;
-  if (I2 > threshold) n++;
-  if (I3 > threshold) n++;
-  if (I4 > threshold) n++;
-  if (I5 > threshold) n++;
+  float list[6] = {I1,I2,I3,I4,I5,I6};
+  float max_val = get_max(list);
 
-  // To be commented 
-  Serial.print("n: ");
-  Serial.print(n);
+  float thld_0    = 15.0*max_val/500.0;
+  float thld_90   = 15.0*max_val/500.0;
+  float thld_180  = 15.0*max_val/500.0;
+  float div0H = 1.2;  // Para 0 grados horizontal
+  float div0V = 1.2;  // Para 0 grados vertical
 
-  Serial.print("ldr0 ");
-  Serial.print(analogRead(ldr0));
-  
-  Serial.print(" ldr1 ");
-  Serial.print(analogRead(ldr1));
+  // *** Plano horizontal ***
 
-  Serial.print(" ldr2 ");
-  Serial.print(analogRead(ldr2));
-
-  Serial.print(" ldr3 ");
-  Serial.print(analogRead(ldr3));
-  
-  Serial.print(" ldr4 ");
-  Serial.print(analogRead(ldr4));
-
-  Serial.print(" ldr5 ");
-  Serial.print(analogRead(ldr5));
-  Serial.println();
-  
-  // If no sensors are above threshold, return 999,999
-
-  if (n == 0) {
-    angles[0] = 999;
-    angles[1] = 999;
-    return;
+  // Frontal (0 grados)
+  if ( (I1+1.0e-6)/(I6+1.0e-6) < div0H && (I6+1.0e-6)/(I1+1.0e-6) < div0H && ((I6<thld_0)&&(I1<thld_0))){
+    alpha = 0.0;
+  }
+  // Lateral (entre 0 y +90 grados)
+  else if (I1>I6){
+    alpha = +1.0 * fotocouple(ldr1,ldr0,90.0);
+  }
+  // Lateral (entre 0 y -90 grados)
+  else if (I6>I1){
+    alpha = -1.0 * fotocouple(ldr4,ldr5,90.0);
+  }
+  // Detrás (180 grados)
+  else if (I1<thld_180 && I2<thld_180 && (I5<thld_180 && I6<thld_180)){
+    alpha = 180.0; // Por si acaso
+  }
+  // Eclipse
+  else if (I1<thld_180 && I2<thld_180 && I5<thld_180 && I6<thld_180){
+    alpha = 191919; // Por si acaso
+  }
+  else {
+    alpha = 999;
   }
 
-  // Determine where the light is
-
-  // Lateral cuadrant
-  if (n==3){
-    // Down right
-    if (I5+I4+I3 < I1+I0+I2) {
-      alpha = 0.00 + fotocouple(ldr0,ldr1, 90);
-      beta  = -1.0 * fotocouple(ldr1,ldr2, 90);
-      gamma = -1.0 * fotocouple(ldr0,ldr2, 90);
-    }
-    // Up left
-    else if (I5+I4+I3 > I1+I0+I2) {
-      alpha = 90.0 + fotocouple(ldr4,ldr5, 90);
-      beta  = +1.0 * fotocouple(ldr4,ldr3, 90);
-      gamma = +1.0 * fotocouple(ldr5,ldr3, 90);
-    }
+  // *** Plano vertical ***
+  //
+  if ( (I3+1.0e-6)/(I4+1.0e-6) < div0V && (I4+1.0e-6)/(I3+1.0e-6) < div0V){
+    beta = 0.0;
   }
-  // Frontal light
-  else if ( n == 2 && I1 > threshold &&  I4 > threshold) {
-      alpha = 90.0;
-      if (I2>I3)      {beta= -1.0 * fotocouple(ldr1,ldr2,90);}
-      else if (I2<I3) {beta= +1.0 * fotocouple(ldr4,ldr3,90);}
-      gamma = 0.0;
+  else if (I3>I4){
+    if (I1>I2){beta = +1.0 * fotocouple(ldr0,ldr2,90.0);}
+    else      {beta = +1.0 * fotocouple(ldr1,ldr2,90.0);}
   }
-  // Left lateral light
-  else if (n==1 && I5 > threshold){
-      alpha = 180.0;
-      beta  = 0.0;
-      gamma = 0.0;
+  else if (I4>I3){
+    if (I6>I5){beta = -1.0 * fotocouple(ldr5,ldr3,90.0);}
+    else      {beta = -1.0 * fotocouple(ldr4,ldr3,90.0);}
   }
-  // Right lateral light
-  else if (n==1 && I0 > threshold){
-      alpha = 0.0;
-      beta  = 0.0;
-      gamma = 0.0;
-  }
-  // Upper light
-  else if (n==1 && I3 > threshold){
-      alpha = 90.0;
-      beta  = 90.0;
-      gamma = 90.0;
-  }
-  // Lower light
-  else if (n==1 && I2 > threshold){
-      alpha = 90.0;
-      beta  = -90.0;
-      gamma = -90.0;
+  else {
+    beta = 999;
   }
 
+  // Avoid nan
+  if (isnan(alpha)){
+  alpha = 848;
+  }
+  if (isnan(beta)){
+  beta = 848;
+  }
 
   float longitude = alpha;
-  float latitude  = (beta+gamma)/2.0;
+  float latitude  = beta;
 
-  angle[0] = latitude;
-  angle[1] = longitude;
-
+  angle[0] = alpha; // alpha
+  angle[1] = beta;  // beta
 
 }
 
-float fotocouple (int pin1, int pin2, int theta){
+float fotocouple (int pin1, int pin2, float theta){
 
   // Function to compute angle out of two LDRs/Phototransistors
   //
@@ -239,16 +225,35 @@ float fotocouple (int pin1, int pin2, int theta){
   //    return alpha:  angle
   //
 
+
   float alpha;
-  theta = theta*3.1416/180;
+  theta = theta*3.1416/180.0; // deg2rad
 
   // MODEL PARAMETERS
 
-  // if (pin1==0 || pin1 == 2){}
+  float b;
+  float c;
+  float d;
 
-  float b = 1.7875;
-  float c = 11.77375;
-  float d = 1.57625;
+  // Front-right
+  if (pin1 == ldr0 && pin2 == ldr1 || pin1 == ldr1 && pin2 == ldr0){
+    b = 2; //2.371250;
+    c = 2.827525;
+    d = 0.889800;
+  }
+  // Frontal-left
+  else if (pin1 == ldr4 && pin2 == ldr5 || pin1 == ldr5 && pin2 == ldr4) {
+    b = 2; // 2.316000;
+    c = -5.0; //-21.4075;
+    d = 0.861975;
+  }
+  else {
+    b = 1.7875;
+    c = 11.77375;
+    d = 1.57625;
+  }
+
+  d = 1;
 
   // Get input
 
@@ -259,9 +264,10 @@ float fotocouple (int pin1, int pin2, int theta){
 
   float I = I1/(I1+I2);
 
-  float A = I-1+I*cos(b*theta);
-  float B = -I*sin(b*theta);
-  float C = (1-2*I)*d;
+  float A = I-1.0+I*cos(b*theta);
+  float B = -1.0 * I*sin(b*theta);
+  float C = (1.0-2.0*I)*d;
+  
 
   // Solve equation
 
@@ -290,4 +296,17 @@ float fotocouple (int pin1, int pin2, int theta){
 
   return alpha;
 
+}
+
+float get_max(float a[6])
+{
+    float max = a[0];
+    for (int i = 1; i < 6; i++)
+    {
+        if (a[i] > max)
+        {
+            max = a[i];
+        }
+    }
+    return max;
 }
