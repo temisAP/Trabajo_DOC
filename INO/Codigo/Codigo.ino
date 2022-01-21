@@ -8,7 +8,7 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);  // create LCD objet to display
 VarSpeedServo myservo;                  // create servo object to control a servo
 
 // Pins
-const int switchPin = 13;     // analog pin used to change between modes
+const int switchPin = A8;     // analog pin used to change between modes
 const int servoPin  = 9;     // the digital pin used for the servo
 const int ldr0      = A0;
 const int ldr1      = A1;
@@ -38,9 +38,10 @@ float S_theta_E = 0;    // Cumulative error
 
 // PID constants
 float theta_T = 0;      // Target angle
-float kp = 1;
-float ki = 0;
-float kd = 0;
+float kp = 0.5;
+float kd = 1;
+float ki = 1;
+
 
 void setup() {
   // LCD setup
@@ -58,36 +59,36 @@ void setup() {
 }
 
 void loop() {
-   delay(100); // Uncomment this line to be able to read serial
+   delay(1000); // Uncomment this line to be able to read serial
 
   // Get angle and time
   get_angle(angles);
   theta_R = angles[0];
   theta_V = angles[1];
-  if (theta_R-theta_R_prev >= 70) {S_theta_E = 0;} // Reset time origin for PID
+  if (abs(theta_R-theta_R_prev) >= 70.0) {S_theta_E = 0.0;} // Reset time origin for PID
 
   // Write angle in LCD
   writeInLDC(theta_R,theta_V);
 
   // Move servo if switcher is on
-  if (digitalRead(switchPin) == HIGH){
+  if (analogRead(switchPin) > 900.0){
     // Time and error
-    now = 1000 * millis();
+    now = 1000.0 * millis();
     theta_E = theta_T - theta_R;
     d_theta_E =  (theta_E - theta_E_prev) / (now-prev);
     S_theta_E += (theta_E + theta_E_prev) / 2.0 * (now-prev);
     // Get movement of the falcon
     theta_F = theta_F + theta_E;
+    if (theta_F > 180.0) {theta_F = 180.0;}  // Para que deje de acumular error
+    if (theta_F < -180.0) {theta_F = -180.0;}      // Para que deje de acumular error
     omega_F = kp*theta_E + kd*d_theta_E + ki*S_theta_E;
     // Servo movement
     theta_S = (180.0 - theta_F)/2.0;
-    omega_S = 2*omega_F;
+    omega_S = 0.5*omega_F;
     // Survival
-    if (omega_S >= 15) {omega_S = 15;}   // Para que no salga volando
-    if (theta_S >= 180) {theta_S = 0;}   // Busca en el otro sentido
-    if (theta_S <= 0) {theta_S = 180;}   // Busca en el otro sentido
+    if (omega_S >= 30.0) {omega_S = 30.0;}   // Para que no salga volando
     // Move servo
-    myservo.write(theta_S,omega_S,true); // True overwrites angle
+    myservo.write(theta_S,omega_S,false); // True overwrites angle
     // Store previous error state
     theta_E_prev = theta_E;
     prev = now;
@@ -152,13 +153,12 @@ void get_angle(float angle[]){
   float thld_0    = 15.0*max_val/500.0;
   float thld_90   = 15.0*max_val/500.0;
   float thld_180  = 15.0*max_val/500.0;
-  float div0H = 1.2;  // Para 0 grados horizontal
   float div0V = 1.2;  // Para 0 grados vertical
 
   // *** Plano horizontal ***
 
   // Frontal (0 grados)
-  if ( (I1+1.0e-6)/(I6+1.0e-6) < div0H && (I6+1.0e-6)/(I1+1.0e-6) < div0H && ((I6<thld_0)&&(I1<thld_0))){
+  if ( (I1+1.0e-6)/(I6+1.0e-6) < 1.3 && (I6+1.0e-6)/(I1+1.0e-6) < 1.1 ){
     alpha = 0.0;
   }
   // Lateral (entre 0 y +90 grados)
@@ -175,10 +175,12 @@ void get_angle(float angle[]){
   }
   // Eclipse
   else if (I1<thld_180 && I2<thld_180 && I5<thld_180 && I6<thld_180){
-    alpha = 191919; // Por si acaso
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Eclipse!");  
   }
   else {
-    alpha = 999;
+    alpha = 0.0;
   }
 
   // *** Plano vertical ***
@@ -200,10 +202,10 @@ void get_angle(float angle[]){
 
   // Avoid nan
   if (isnan(alpha)){
-  alpha = 848;
+  alpha = 0.0;
   }
   if (isnan(beta)){
-  beta = 848;
+  beta = 0.0;
   }
 
   float longitude = alpha;
