@@ -174,45 +174,45 @@ void get_angle(float angle[]){
   // Lateral cuadrant
   if (n==3){
     // Down right
-    if (I5+I4+I3 > I1+I0+I2) {
-      alpha = 0.00 + fotocouple(ldr5,ldr4, 90);
-      beta  = -1.0 * fotocouple(ldr4,ldr3, 90);
-      gamma = 0.00 + fotocouple(ldr5,ldr3, 90);
+    if (I5+I4+I3 < I1+I0+I2) {
+      alpha = 0.00 + fotocouple(ldr0,ldr1, 90);
+      beta  = -1.0 * fotocouple(ldr1,ldr2, 90);
+      gamma = -1.0 * fotocouple(ldr0,ldr2, 90);
     }
     // Up left
     else if (I5+I4+I3 > I1+I0+I2) {
-      alpha = 90.0 + fotocouple(ldr5,ldr4, 90);
+      alpha = 90.0 + fotocouple(ldr4,ldr5, 90);
       beta  = +1.0 * fotocouple(ldr4,ldr3, 90);
-      gamma = 90.0 + fotocouple(ldr5,ldr3, 90);
+      gamma = +1.0 * fotocouple(ldr5,ldr3, 90);
     }
   }
   // Frontal light
   else if ( n == 2 && I1 > threshold &&  I4 > threshold) {
       alpha = 90.0;
-      if (I2>I3)      {beta= 1.0 * fotocouple(ldr1,ldr2,90);}
-      else if (I2>I3) {beta=-1.0 * fotocouple(ldr4,ldr3,90);}
+      if (I2>I3)      {beta= -1.0 * fotocouple(ldr1,ldr2,90);}
+      else if (I2<I3) {beta= +1.0 * fotocouple(ldr4,ldr3,90);}
       gamma = 0.0;
   }
   // Left lateral light
   else if (n==1 && I5 > threshold){
-      alpha = 0.0;
+      alpha = 180.0;
       beta  = 0.0;
       gamma = 0.0;
   }
   // Right lateral light
   else if (n==1 && I0 > threshold){
-      alpha = 180.0;
+      alpha = 0.0;
       beta  = 0.0;
       gamma = 0.0;
   }
   // Upper light
-  else if (n==1 && I2 > threshold){
+  else if (n==1 && I3 > threshold){
       alpha = 90.0;
       beta  = 90.0;
       gamma = 90.0;
   }
-  // Upper light
-  else if (n==1 && I3 > threshold){
+  // Lower light
+  else if (n==1 && I2 > threshold){
       alpha = 90.0;
       beta  = -90.0;
       gamma = -90.0;

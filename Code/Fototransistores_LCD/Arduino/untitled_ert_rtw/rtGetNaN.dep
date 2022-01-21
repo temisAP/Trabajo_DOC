@@ -1,0 +1,11 @@
+rtGetNaN.o: \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Arduino/untitled_ert_rtw/rtGetNaN.c \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Arduino/untitled_ert_rtw/rtGetNaN.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Arduino/untitled_ert_rtw/rtwtypes.h \
+ C:/Users/Siro/Desktop/Fototransistores_LCD/Arduino/untitled_ert_rtw/rt_nonfinite.h
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Arduino/untitled_ert_rtw/rtGetNaN.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Arduino/untitled_ert_rtw/rtwtypes.h:
+
+C:/Users/Siro/Desktop/Fototransistores_LCD/Arduino/untitled_ert_rtw/rt_nonfinite.h:
