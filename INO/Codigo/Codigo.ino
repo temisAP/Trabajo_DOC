@@ -20,27 +20,34 @@ const int ldr5      = A5;
 // Falcon variables
 float theta_F = 0;      // Falcon angle
 float omega_F = 0;      // Falcon speed rate
+
 // Servo variables
-float theta_S = 90;      // Servo angle
-float omega_S = 12;      // Servo speed rate
+float theta_S = 90;     // Servo angle
+float omega_S = 12;     // Servo speed rate
+
 // Time variables
 float now = 0;          // Current time
 float prev = 0;         // Previous time
-// PID angles
+
+// Sensor angles
 float theta_R = 0;      // Relative longitude angle between sensors and sun
 float theta_R_prev = 0; // Previous angle between sensors and sun
 float theta_V;          // Relative latitude angle between sensors and sunS
-float angles[2];   // Array to contain {theta_R,theta_V}
+float angles[2];        // Array to contain {theta_R,theta_V}0
+
+// Error
 float theta_E = 0;      // Error between R and T
 float theta_E_prev = 0; // Previous error
 float d_theta_E = 0;    // Derivate of error
+float d_theta_E_prev = 0;    // Previous error derivative
+float d2_theta_E = 0;    // Second derivate of error
 float S_theta_E = 0;    // Cumulative error
 
 // PID constants
 float theta_T = 0;      // Target angle
-float kp = 0.8;
-float kd = 0.5;
-float ki = 0.0001;
+float kp = 0.9;
+float kd = 0.0002;
+float ki = 0.01;
 
 
 
@@ -53,8 +60,8 @@ void setup() {
   //myservo.write(theta_S,omega_S,true);    // set the intial position of the servo, as fast as possible, wait until done
   // Serial
   Serial.begin(9600);
-  //while (!Serial);
-  //Serial.println("ldr0,ldr1,ldr2,ldr3,ldr4,ldr5");
+  while (!Serial);
+  Serial.println("theta_E,theta_F,omega_F");
   // Switcher (modes);
   pinMode(switchPin, INPUT);
 }
@@ -66,7 +73,7 @@ void loop() {
   get_angle(angles);
   theta_R = angles[0];
   theta_V = angles[1];
-  if (abs(theta_R-theta_R_prev) >= 60.0) {S_theta_E = 0.0;} // Reset time origin for PID
+  if (abs(theta_R-theta_R_prev) >= 60.0) {S_theta_E = 0.0;} // If target is far reset time origin for PID
 
   // Write angle in LCD
   writeInLDC(theta_R,theta_V);
@@ -74,15 +81,21 @@ void loop() {
   // Move servo if switcher is on
   if (analogRead(switchPin) > 900.0){
     // Time and error
-    now = 1000.0 * millis();
-    theta_E = theta_T - theta_R;
-    d_theta_E =  (theta_E - theta_E_prev) / (now-prev);
-    S_theta_E += (theta_E + theta_E_prev) / 2.0 * (now-prev);
+    now = millis()/1000.0;
+    theta_E = theta_T - theta_R;                                // Error
+    d_theta_E  = (theta_E - theta_E_prev) / (now-prev);         // First derivative 
+    d2_theta_E = (d_theta_E - d_theta_E_prev) / (now-prev);     // Second derivative
+    S_theta_E += (theta_E + theta_E_prev) / 2.0 * (now-prev);   // Cumulative error
+    Serial.print(theta_E);
+    Serial.print(",");
     // Get movement of the falcon
-    theta_F = theta_E + (180-2.0*(myservo.read());
+    theta_F = (kp*theta_E + kd*d_theta_E + ki*S_theta_E) + (180-2.0*(myservo.read())); // deg
+    Serial.print(theta_F);
+    Serial.print(",");
+    omega_F = 255.0/545.45454 * abs(kp*d_theta_E + kd*d2_theta_E + ki*theta_E);        // deg/s
+    Serial.println(omega_F);
     if (theta_F > 180.0) {theta_F = 180.0;}        // Para que deje de acumular error
     if (theta_F < -180.0) {theta_F = -180.0;}      // Para que deje de acumular error
-    omega_F = abs(kp*theta_E + kd*d_theta_E + ki*S_theta_E);
     // Servo movement
     theta_S = (180.0 - theta_F)/2.0;
     omega_S = 0.5*omega_F;
@@ -92,6 +105,7 @@ void loop() {
     myservo.write(theta_S,omega_S,false); // False overwrites angle
     // Store previous error state
     theta_E_prev = theta_E;
+    d_theta_E_prev = d_theta_E;
     prev = now;
   }
 
