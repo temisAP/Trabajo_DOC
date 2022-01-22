@@ -38,8 +38,6 @@ float S_theta_E = 0;    // Cumulative error
 
 // PID constants
 float theta_T = 0;      // Target angle
-float kp = 0.5;
-float kd = 1;
 float kp = 0.8;
 float kd = 0.5;
 float ki = 0.0001;
