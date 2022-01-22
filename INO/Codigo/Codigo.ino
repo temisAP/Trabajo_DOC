@@ -40,7 +40,10 @@ float S_theta_E = 0;    // Cumulative error
 float theta_T = 0;      // Target angle
 float kp = 0.5;
 float kd = 1;
-float ki = 1;
+float kp = 0.8;
+float kd = 0.5;
+float ki = 0.0001;
+
 
 
 void setup() {
@@ -49,7 +52,7 @@ void setup() {
   lcd.print("Hello"); // print a message to the LCD
   // Servo setup
   myservo.attach(servoPin);     // attaches the servo on servoPin
-  myservo.write(theta_S,omega_S,true);    // set the intial position of the servo, as fast as possible, wait until done
+  //myservo.write(theta_S,omega_S,true);    // set the intial position of the servo, as fast as possible, wait until done
   // Serial
   Serial.begin(9600);
   //while (!Serial);
@@ -59,13 +62,13 @@ void setup() {
 }
 
 void loop() {
-   delay(1000); // Uncomment this line to be able to read serial
+   delay(300); // Uncomment this line to be able to read serial
 
   // Get angle and time
   get_angle(angles);
   theta_R = angles[0];
   theta_V = angles[1];
-  if (abs(theta_R-theta_R_prev) >= 70.0) {S_theta_E = 0.0;} // Reset time origin for PID
+  if (abs(theta_R-theta_R_prev) >= 60.0) {S_theta_E = 0.0;} // Reset time origin for PID
 
   // Write angle in LCD
   writeInLDC(theta_R,theta_V);
@@ -78,17 +81,17 @@ void loop() {
     d_theta_E =  (theta_E - theta_E_prev) / (now-prev);
     S_theta_E += (theta_E + theta_E_prev) / 2.0 * (now-prev);
     // Get movement of the falcon
-    theta_F = theta_F + theta_E;
-    if (theta_F > 180.0) {theta_F = 180.0;}  // Para que deje de acumular error
+    theta_F = theta_E + (180-2.0*(myservo.read());
+    if (theta_F > 180.0) {theta_F = 180.0;}        // Para que deje de acumular error
     if (theta_F < -180.0) {theta_F = -180.0;}      // Para que deje de acumular error
-    omega_F = kp*theta_E + kd*d_theta_E + ki*S_theta_E;
+    omega_F = abs(kp*theta_E + kd*d_theta_E + ki*S_theta_E);
     // Servo movement
     theta_S = (180.0 - theta_F)/2.0;
     omega_S = 0.5*omega_F;
     // Survival
-    if (omega_S >= 30.0) {omega_S = 30.0;}   // Para que no salga volando
+    if (omega_S >= 28.0) {omega_S = 28.0;}   // Para que no salga volando
     // Move servo
-    myservo.write(theta_S,omega_S,false); // True overwrites angle
+    myservo.write(theta_S,omega_S,false); // False overwrites angle
     // Store previous error state
     theta_E_prev = theta_E;
     prev = now;

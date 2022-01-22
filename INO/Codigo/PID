@@ -1,0 +1,7 @@
+Baila una vez que llega:
+
+	float kp = 0.5;
+	float ki = pow(2.0,0.5) * kp;
+	float kd = 2.0*ki;
+
+
